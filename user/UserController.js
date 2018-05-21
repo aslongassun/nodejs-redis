@@ -8,22 +8,18 @@ var router = express.Router();
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
-//-----For heroku----//
+//-----CONFIG FOR CLOUND HEROKU-----//
 // var redisURL = url.parse(process.env.REDISCLOUD_URL,true);
 // var client = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
 // client.auth(redisURL.auth.split(":")[1]);
-// client.on("error", (err) =>
-// {
-//     console.log("Redis error: " + err);
-// });
-//-------------------//
-
-//-----For local------//
+//--------------------//
+//-----CONFIG FOR LOCAL------//
 var client = redis.createClient();
+//--------------------//
+
 client.on("error", function (err) {
     console.log("Error " + err);
 });
-//--------------------//
 
 // return all the user in database
 router.get('/', function (req, res) {
@@ -66,10 +62,8 @@ router.post('/', function (req, res) {
         client.set(login_info, user_id, function(err, reply) {
             // add data for leaderboard
             client.zadd("users", 0, userInfo);
-
             // add data for admnin leaderboard for order by update time
             client.zadd("admin_users", currentTime.getTime(), userInfo);
-
             // inscrease user_id key
             client.incr("user:_id");
             // add data to set uiser-id info
@@ -132,9 +126,7 @@ router.put('/:id', function (req, res) {
         userInfo.timemilisecond = currentTime.getTime();
 
         userInfo = JSON.stringify(userInfo);
-
         client.set(user_id, userInfo);
-
         // insert item in sort set
         client.zadd("users", parseInt(req.body.score), userInfo);
         // insert item in sort set admin
@@ -168,49 +160,35 @@ router.get('/admin', function (req, res) {
 // delete user
 router.delete('/:id', function (req, res) {
     var user_id = req.params.id;
-    console.log("user id:" + user_id);
 
     // remove item in sort set
     client.get(user_id, function(err, object) {
-
         // remove item in sort set
         client.zrem("users", object);
         // remove item in sort set admin
-        console.log("afterremove");
-        console.log(object);
         client.zrem("admin_users", object);
         // remove item in set data
         client.del(user_id);
         // remove user from login
         client.get(user_id+":login", function(err, object) {
             var login_info = object;
-            console.log(login_info);
             client.del(login_info);
             client.del(user_id+":login");
         });
-
         res.status(200).send("User was deleted.");
 
     });
 
 });
 
+// get users by time update
 router.get('/admin/:time', function (req, res) {
-
-	console.log('/admin/:time');
 
     var minutes = parseInt(req.params.time);
     var date = new Date();
-
     var currentTimeStart = date.getTime() - minutes * 60 * 1000;
     var currentTimeEnd = date.getTime();
-
-    console.log('minutes:' + minutes);
-    console.log('start:' + currentTimeStart);
-    console.log('end:' + currentTimeEnd);
-
     client.zrevrangebyscore('admin_users',currentTimeEnd,currentTimeStart,function(err,result){
-        console.log('['+result+']');
         res.status(200).send('['+result+']');
     })
     
