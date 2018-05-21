@@ -9,20 +9,20 @@ router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
 //-----For heroku----//
-var redisURL = url.parse(process.env.REDISCLOUD_URL,true);
-var client = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
-client.auth(redisURL.auth.split(":")[1]);
-client.on("error", (err) =>
-{
-    console.log("Redis error: " + err);
-});
+// var redisURL = url.parse(process.env.REDISCLOUD_URL,true);
+// var client = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
+// client.auth(redisURL.auth.split(":")[1]);
+// client.on("error", (err) =>
+// {
+//     console.log("Redis error: " + err);
+// });
 //-------------------//
 
 //-----For local------//
-// var client = redis.createClient();
-// client.on("error", function (err) {
-//     console.log("Error " + err);
-// });
+var client = redis.createClient();
+client.on("error", function (err) {
+    console.log("Error " + err);
+});
 //--------------------//
 
 // return all the user in database
