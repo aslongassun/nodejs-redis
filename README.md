@@ -5,8 +5,7 @@ Backend NodeJS service for leaderboard this version use Redis as a database mana
 ## Getting Started
 
 ### Prerequisites
-
-- You need to install these app on your system first:<br />
+You need to install these app on your system first:<br />
 - [Node](https://nodejs.org/en/)<br />
 - [Redis](https://redis.io/download)<br />
 
