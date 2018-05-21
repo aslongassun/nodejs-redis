@@ -15,7 +15,7 @@ router.use(bodyParser.json());
 //--------------------//
 //-----CONFIG FOR LOCAL------//
 var client = redis.createClient();
-//--------------------//
+//---------------------------//
 
 client.on("error", function (err) {
     console.log("Error " + err);
@@ -28,26 +28,51 @@ var io = require('socket.io')({
 });
 io.attach(_PortSocketIO);
 io.on('connection', function(socket){
-    
+
     // Listen emit get users event
-    socket.on('getusers', function(data) {
+    socket.on('getusers', function() {
         client.zrevrange('users',0,-1,function(err,result){
             var myObject = {
                 items: '['+result+']'
             }
             socket.emit('receiveusers', myObject);
         })
-        
+    });
+
+    // Listen emit get users event from admin
+    socket.on('getusers-from-admin', function(data) {
+
+        var minutes = parseInt(data);
+        var date = new Date();
+        var currentTimeStart = date.getTime() - minutes * 60 * 1000;
+        var currentTimeEnd = date.getTime();
+
+        if (minutes > 0){
+            client.zrevrangebyscore('admin_users',currentTimeEnd,currentTimeStart,function(err,result){
+                var myObject = {
+                    items: '['+result+']'
+                }
+                socket.emit('receiveusers', myObject);
+            })
+        } else {
+            client.zrevrange('admin_users',0,-1,function(err,result){
+                var myObject = {
+                    items: '['+result+']'
+                }
+                socket.emit('receiveusers', myObject);
+            })
+        }
+
     });
 
 })
 
 // return all the user in database
-router.get('/', function (req, res) {
-    client.zrevrange('users',0,-1,function(err,result){
-        res.status(200).send('['+result+']');
-    })
-});
+// router.get('/', function (req, res) {
+//     client.zrevrange('users',0,-1,function(err,result){
+//         res.status(200).send('['+result+']');
+//     })
+// });
 
 // create user
 router.post('/', function (req, res) {
@@ -160,8 +185,8 @@ router.put('/:id', function (req, res) {
         // insert item in sort set
         client.zadd("users", parseInt(req.body.score), userInfo);
         // insert item in sort set admin
-        client.zadd("admin_users", parseInt(req.body.score), userInfo);
-
+        client.zadd("admin_users", currentTime.getTime(), userInfo);
+        
         // change login info
         client.get(user_id+":login", function(err, object) {
             var old_login_info = object;
@@ -178,14 +203,14 @@ router.put('/:id', function (req, res) {
 });
 
 //return all the user in database
-router.get('/admin', function (req, res) {
-    console.log('/admin');
-    client.zrevrange('admin_users',0,-1,function(err,result){
-        console.log('['+result+']');
-        res.status(200).send('['+result+']');
-    })
+// router.get('/admin', function (req, res) {
+//     console.log('/admin');
+//     client.zrevrange('admin_users',0,-1,function(err,result){
+//         console.log('['+result+']');
+//         res.status(200).send('['+result+']');
+//     })
 
-});
+// });
 
 // delete user
 router.delete('/:id', function (req, res) {
@@ -212,17 +237,16 @@ router.delete('/:id', function (req, res) {
 });
 
 // get users by time update
-router.get('/admin/:time', function (req, res) {
+// router.get('/admin/:time', function (req, res) {
 
-    var minutes = parseInt(req.params.time);
-    var date = new Date();
-    var currentTimeStart = date.getTime() - minutes * 60 * 1000;
-    var currentTimeEnd = date.getTime();
-    client.zrevrangebyscore('admin_users',currentTimeEnd,currentTimeStart,function(err,result){
-        res.status(200).send('['+result+']');
-    })
+//     var minutes = parseInt(req.params.time);
+//     var date = new Date();
+//     var currentTimeStart = date.getTime() - minutes * 60 * 1000;
+//     var currentTimeEnd = date.getTime();
+//     client.zrevrangebyscore('admin_users',currentTimeEnd,currentTimeStart,function(err,result){
+//         res.status(200).send('['+result+']');
+//     })
     
-});
-
+// });
 
 module.exports = router;
