@@ -1,0 +1,27 @@
+{
+  "name": "cd..",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aslongassun/nodejs-leaderboard.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aslongassun/nodejs-leaderboard/issues"
+  },
+  "homepage": "https://github.com/aslongassun/nodejs-leaderboard#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.3",
+    "mongoose": "^5.1.1",
+    "redis": "^2.8.0",
+    "url": "^0.11.0"
+  }
+}
