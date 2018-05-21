@@ -9,26 +9,23 @@ router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
 //-----For heroku----//
-// var redisURL = url.parse(process.env.REDISCLOUD_URL,true);
-// var client = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
-// client.auth(redisURL.auth.split(":")[1]);
-// client.on("error", (err) =>
-// {
-//     console.log("Redis error: " + err);
-// });
+var redisURL = url.parse(process.env.REDISCLOUD_URL,true);
+var client = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
+client.auth(redisURL.auth.split(":")[1]);
+client.on("error", (err) =>
+{
+    console.log("Redis error: " + err);
+});
+//-------------------//
 
 //-----For local------//
-var client = redis.createClient();
-client.on("error", function (err) {
-    console.log("Error " + err);
-});
+// var client = redis.createClient();
+// client.on("error", function (err) {
+//     console.log("Error " + err);
+// });
+//--------------------//
 
-// var bodyParser = require('body-parser');
-// router.use(bodyParser.urlencoded({ extended: true }));
-// router.use(bodyParser.json());
-// var User = require('./User');
-
-//return all the user in database
+// return all the user in database
 router.get('/', function (req, res) {
 
     client.zrevrange('users',0,-1,function(err,result){
@@ -36,55 +33,10 @@ router.get('/', function (req, res) {
         res.status(200).send('['+result+']');
     })
 
-    // client.zrange('users',0,-1,'withscores',function(err,result){
-    //     console.log(result);
-    //    res.status(200).send(result);
-    // })
-
-    //res.status(200).send("call get");
-    
-    // client.set('framework', 'AngularJS', function(err, reply) {
-    //   console.log(reply);
-    // });
-    // client.get('framework', function(err, reply) {
-    //     console.log(reply);
-    // });
-
-    // client.hmset('frameworks', 'javascript', 'AngularJS', 'css', 'Bootstrap', 'node', 'Express');
-    // client.hmset('user', {
-    //     'name': 'user1',
-    //     'passwork': '1111'
-    // });
-
-    // client.hgetall('user1', function(err, object) {
-    //     console.log(object);
-    //     res.status(200).send(object);
-    // });
-
-    // client.zadd(["user1",10,"1111"], (err) =>
-    // {
-    //     console.log("redis have proplem!");
-    //     console.log(err);
-    // });
-
-    // User.find({role:"user"}, function (err, users) {
-    //     if (err) return res.status(500).send("Problem when get all users.");
-    //     res.status(200).send(users);
-    //     console.log("Gets Called");
-    // }).sort({score: 'desc'});
-
 });
 
 // create user
 router.post('/', function (req, res) {
-    
-    // check userId is created
-    // client.exists("user:_id", function(err, reply) {
-    //     if (reply != 1) {
-    //         console.log("not existed");
-    //         client.set("user:_id", 1);
-    //     }
-    // });
 
     client.get("user:_id", function(err, object) {
 
@@ -129,38 +81,7 @@ router.post('/', function (req, res) {
             console.log(userInfo);
         });
 
-        // var login_info = req.body.name + "_" + req.body.password;
-        // client.set(user_id, login_info, function(err, reply) {
-        //     // add data for leaderboard
-        //     client.zadd("users", 0, userInfo);
-        //     // inscrease user_id key
-        //     client.incr("user:_id");
-        //     // add data to set uiser-id info
-        //     client.set(user_id, userInfo);
-        //     // request success
-        //     res.status(200).send(userInfo);
-        //     console.log(userInfo);
-        // });
-
-
     });
-
-    
-
-    // User.create({
-    //         name : req.body.name,
-    //         password : req.body.password,
-    //         score : 0,
-    //         updatecounter: 0,
-    //         lastmodified: new Date(),
-    //         role: 'user'
-    //     }, 
-    //     function (err, user) {
-    //         if (err) return res.status(500).send("Problem when adding user to the database." + err);
-    //         res.status(200).send(user);
-    //         console.log("Create Called");
-    //     });
-
     
 });
 
@@ -186,13 +107,6 @@ router.post('/login', function (req, res) {
             return res.status(500).send("Problem when login" + err);
         }
     });
-    
-    // User.find({name:req.body.name, password:req.body.password}, function (err, users) {
-    //     if (err) return res.status(500).send("Problem when get all users.");
-    //     if (users.length == 0) return res.status(404).send("Not found any user.");
-    //     res.status(200).send(users);
-    //     console.log("Login Called");
-    // });
 
 });
 
@@ -239,11 +153,6 @@ router.put('/:id', function (req, res) {
 
     });
 
-    // User.findByIdAndUpdate(req.params.id, req.body, {new: true}, function (err, user) {
-    //     if (err) return res.status(500).send("Problem when updating the user.");
-    //     res.status(200).send(user);
-    //     console.log("Update Called");
-    // });
 });
 
 //return all the user in database
@@ -254,31 +163,6 @@ router.get('/admin', function (req, res) {
         res.status(200).send('['+result+']');
     })
 
-    // client.zrevrange('users',0,-1,function(err,result){
-        
-    //     console.log('before sort');
-    //     console.log('['+result+']');
-
-    //     //-----SORT BY TIME UPDATE DESC--------
-    //     // var resultJSON = JSON.parse('['+result+']');
-    //     // resultJSON = resultJSON.sort(function(a, b) {
-    //     //     return parseFloat(b.timemilisecond) - parseFloat(a.timemilisecond);
-    //     // });
-    //     // result = JSON.stringify(resultJSON);
-    //     //-------------------------------------
-
-    //     console.log('after sort');
-    //     console.log(result);
-
-    //     res.status(200).send(result);
-    // })
-
-
-    // User.find({role:"user"}, function (err, users) {
-    //     if (err) return res.status(500).send("Problem when get all users.");
-    //     res.status(200).send(users);
-    //     console.log("Gets Called");
-    // }).sort({updatedAt: 'desc'});
 });
 
 // delete user
@@ -309,13 +193,6 @@ router.delete('/:id', function (req, res) {
 
     });
 
-
-
-    // User.findByIdAndRemove(req.params.id, function (err, user) {
-    //     if (err) return res.status(500).send("Problem when deleting the user.");
-    //     res.status(200).send("User "+ user.name +" was deleted.");
-    //     console.log("Delete Called");
-    // });
 });
 
 router.get('/admin/:time', function (req, res) {
@@ -336,28 +213,8 @@ router.get('/admin/:time', function (req, res) {
         console.log('['+result+']');
         res.status(200).send('['+result+']');
     })
-
-
-	// var date = new Date();
-	// var minutes = parseInt(req.params.time);
-
-	// date.setMinutes(date.getMinutes() - minutes);
-
- //    User.find({role:"user",updatedAt: {$gte: date}}, function (err, users) {
- //        if (err) return res.status(500).send("Problem when get all users.");
- //        res.status(200).send(users);
- //        console.log("Gets Called");
- //    }).sort({updatedAt: 'desc'});
     
 });
 
-// get user from id
-// router.get('/:id', function (req, res) {
-//     User.findById(req.params.id, function (err, user) {
-//         if (err) return res.status(500).send("Problem when finding user by id.");
-//         if (!user) return res.status(404).send("No user found.");
-//         res.status(200).send(user);
-//     });
-// });
 
 module.exports = router;
