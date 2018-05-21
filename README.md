@@ -29,9 +29,10 @@ At the project folder run this commandline<br/>
 node server.js
 ```
 4) Now you can see the server is running<br/>
+```
 Express server listening on port 3000
-
-5) Get client Unity application to connect to this server<br/>
+```
+5) Get client Unity application to connect to this server for testing<br/>
 ```
 $ git clone https://github.com/aslongassun/leaderboard-unity-client.git
 ```
@@ -45,5 +46,5 @@ private static string _Port = ":" + "3000";
 //private static string _Url = "https://[appname].herokuapp.com";
 //private static string _Port = "";
 ```
-7) Build the application<br/>
+7) Build and Run the application<br/>
 For more information about set up User role and Admin role to test, please read README.md file of Client Unity application project
