@@ -22,6 +22,7 @@ npm install express
 npm install body-parser
 npm install redis
 npm install url
+npm install socket.io
 ```
 3) Run the server<br/>
 At the project folder run this commandline<br/>
