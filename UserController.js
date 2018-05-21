@@ -21,14 +21,32 @@ client.on("error", function (err) {
     console.log("Error " + err);
 });
 
+// Open socket to list event update list users
+var _PortSocketIO = 4567;
+var io = require('socket.io')({
+    transports: ['websocket'],
+});
+io.attach(_PortSocketIO);
+io.on('connection', function(socket){
+    
+    // Listen emit get users event
+    socket.on('getusers', function(data) {
+        client.zrevrange('users',0,-1,function(err,result){
+            var myObject = {
+                items: '['+result+']'
+            }
+            socket.emit('receiveusers', myObject);
+        })
+        
+    });
+
+})
+
 // return all the user in database
 router.get('/', function (req, res) {
-
     client.zrevrange('users',0,-1,function(err,result){
-        console.log('['+result+']');
         res.status(200).send('['+result+']');
     })
-
 });
 
 // create user
@@ -118,7 +136,15 @@ router.put('/:id', function (req, res) {
 
         // update set data
         var currentTime = new Date();
+
+        console.log("objectbefore");
+        console.log(object);
+
         var userInfo = JSON.parse(object);
+
+        console.log("userInfo1");
+        console.log(userInfo);
+
         userInfo.name = req.body.name;
         userInfo.score = req.body.score;
         userInfo.updatecounter = parseInt(userInfo.updatecounter) + 1;
@@ -126,6 +152,10 @@ router.put('/:id', function (req, res) {
         userInfo.timemilisecond = currentTime.getTime();
 
         userInfo = JSON.stringify(userInfo);
+
+        console.log("userInfo2");
+        console.log(userInfo);
+
         client.set(user_id, userInfo);
         // insert item in sort set
         client.zadd("users", parseInt(req.body.score), userInfo);
