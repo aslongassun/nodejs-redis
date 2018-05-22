@@ -8,14 +8,14 @@ var router = express.Router();
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
-//-----CONFIG FOR CLOUND HEROKU-----//
+//-----CONFIG FOR CLOUND HEROKU---
 // var redisURL = url.parse(process.env.REDISCLOUD_URL,true);
 // var client = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
 // client.auth(redisURL.auth.split(":")[1]);
-//--------------------//
-//-----CONFIG FOR LOCAL------//
+//--------------------------------
+//-----CONFIG FOR LOCAL-----------
 var client = redis.createClient();
-//---------------------------//
+//--------------------------------
 client.on("error", function (err) {
     console.log("Error " + err);
 });
@@ -68,7 +68,6 @@ router.post('/', function (req, res) {
     
 });
 
-
 // return all the user in database
 router.post('/login', function (req, res) {
 
@@ -108,13 +107,8 @@ router.put('/:id', function (req, res) {
         // update set data
         var currentTime = new Date();
 
-        console.log("objectbefore");
-        console.log(object);
-
         var userInfo = JSON.parse(object);
 
-        console.log("userInfo1");
-        console.log(userInfo);
 
         userInfo.name = req.body.name;
         userInfo.score = req.body.score;
@@ -123,9 +117,6 @@ router.put('/:id', function (req, res) {
         userInfo.timemilisecond = currentTime.getTime();
 
         userInfo = JSON.stringify(userInfo);
-
-        console.log("userInfo2");
-        console.log(userInfo);
 
         client.set(user_id, userInfo);
         // insert item in sort set
@@ -169,7 +160,26 @@ router.delete('/:id', function (req, res) {
         res.status(200).send("User was deleted.");
 
     });
+});
 
+// get user info for admin
+router.get('/admin/:time', function (req, res) {
+
+    var minutes = parseInt(req.params.time);
+    var date = new Date();
+    var currentTimeStart = date.getTime() - minutes * 60 * 1000;
+    var currentTimeEnd = date.getTime();
+
+    if (minutes > 0){
+        client.zrevrangebyscore('admin_users',currentTimeEnd,currentTimeStart,function(err,result){
+            res.status(200).send('['+result+']');
+        })
+    } else {
+        client.zrevrange('admin_users',0,-1,function(err,result){
+            res.status(200).send('['+result+']');
+        })
+    }
+    
 });
 
 

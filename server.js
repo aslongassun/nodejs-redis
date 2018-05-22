@@ -4,11 +4,11 @@ var socketIO = require('socket.io');
 var port = process.env.PORT || 3000;
 var redis = require("redis");
 
-
 var server = app.listen(port, function() {
   console.log('Express server listening on port ' + port);
 });
 
+// open socket for more realtime for leaderboard
 var io = socketIO(server);
 
 var client = redis.createClient();
@@ -25,28 +25,19 @@ io.on('connection', (socket) => {
         })
     });
 
-    // Listen emit get users event from admin
-    socket.on('getusers-from-admin', function(data) {
+    // update list user realtime
+	function intervalFunc() {
+		console.log('update users list');
+		client.zrevrange('users',0,-1,function(err,result){
+		    var myObject = {
+		        items: '['+result+']'
+		    }
+		    socket.emit('receiveusers', myObject);
+		})
+	}
 
-        var minutes = parseInt(data);
-        var date = new Date();
-        var currentTimeStart = date.getTime() - minutes * 60 * 1000;
-        var currentTimeEnd = date.getTime();
+	setInterval(intervalFunc, 1000);
 
-        if (minutes > 0){
-            client.zrevrangebyscore('admin_users',currentTimeEnd,currentTimeStart,function(err,result){
-                var myObject = {
-                    items: '['+result+']'
-                }
-                socket.emit('receiveusers', myObject);
-            })
-        } else {
-            client.zrevrange('admin_users',0,-1,function(err,result){
-                var myObject = {
-                    items: '['+result+']'
-                }
-                socket.emit('receiveusers', myObject);
-            })
-        }
-    });
 });
+
+
