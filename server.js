@@ -16,19 +16,9 @@ var client = redis.createClient();
 
 io.on('connection', (socket) => {
 
-    // Listen emit get users event
-    socket.on('getusers', function() {
-        client.zrevrange('users',0,-1,function(err,result){
-            var myObject = {
-                items: '['+result+']'
-            }
-            socket.emit('receiveusers', myObject);
-        })
-    });
-
     // update list user realtime
 	function intervalFunc() {
-		
+
 		client.zrevrange('users',0,-1,function(err,result){
 		    var myObject = {
 		        items: '['+result+']'
