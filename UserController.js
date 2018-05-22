@@ -3,7 +3,6 @@ var express = require('express');
 var redis = require("redis");
 var url = require('url');
 var bodyParser = require('body-parser');
-var socketIO = require('socket.io');
 
 var router = express.Router();
 router.use(bodyParser.urlencoded({ extended: true }));
@@ -20,13 +19,6 @@ var client = redis.createClient();
 client.on("error", function (err) {
     console.log("Error " + err);
 });
-
-// return all the user in database
-// router.get('/', function (req, res) {
-//     client.zrevrange('users',0,-1,function(err,result){
-//         res.status(200).send('['+result+']');
-//     })
-// });
 
 // create user
 router.post('/', function (req, res) {
@@ -156,16 +148,6 @@ router.put('/:id', function (req, res) {
 
 });
 
-//return all the user in database
-// router.get('/admin', function (req, res) {
-//     console.log('/admin');
-//     client.zrevrange('admin_users',0,-1,function(err,result){
-//         console.log('['+result+']');
-//         res.status(200).send('['+result+']');
-//     })
-
-// });
-
 // delete user
 router.delete('/:id', function (req, res) {
     var user_id = req.params.id;
@@ -190,62 +172,5 @@ router.delete('/:id', function (req, res) {
 
 });
 
-// get users by time update
-// router.get('/admin/:time', function (req, res) {
-
-//     var minutes = parseInt(req.params.time);
-//     var date = new Date();
-//     var currentTimeStart = date.getTime() - minutes * 60 * 1000;
-//     var currentTimeEnd = date.getTime();
-//     client.zrevrangebyscore('admin_users',currentTimeEnd,currentTimeStart,function(err,result){
-//         res.status(200).send('['+result+']');
-//     })
-    
-// });
-
-// Socket io opening
-var PORTSOCKET = process.env.PORT || 4567;
-var server = express()
-  .use((req, res) => res.sendFile(INDEX) )
-  .listen(PORTSOCKET, () => console.log('Socket listening on port ' + PORTSOCKET));
-
-var io = socketIO(server);
-io.on('connection', (socket) => {
-
-    // Listen emit get users event
-    socket.on('getusers', function() {
-        client.zrevrange('users',0,-1,function(err,result){
-            var myObject = {
-                items: '['+result+']'
-            }
-            socket.emit('receiveusers', myObject);
-        })
-    });
-
-    // Listen emit get users event from admin
-    socket.on('getusers-from-admin', function(data) {
-
-        var minutes = parseInt(data);
-        var date = new Date();
-        var currentTimeStart = date.getTime() - minutes * 60 * 1000;
-        var currentTimeEnd = date.getTime();
-
-        if (minutes > 0){
-            client.zrevrangebyscore('admin_users',currentTimeEnd,currentTimeStart,function(err,result){
-                var myObject = {
-                    items: '['+result+']'
-                }
-                socket.emit('receiveusers', myObject);
-            })
-        } else {
-            client.zrevrange('admin_users',0,-1,function(err,result){
-                var myObject = {
-                    items: '['+result+']'
-                }
-                socket.emit('receiveusers', myObject);
-            })
-        }
-    });
-});
 
 module.exports = router;
